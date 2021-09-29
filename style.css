@@ -1,0 +1,63 @@
+* {
+    margin: 0;
+    padding: 0;
+
+    color: #0E0E0E;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+body {
+    width: 95%;
+    height: 95%;
+    margin: auto;
+    background: #0000;
+    font-size: 12px;
+}
+
+.post-story {
+    padding-top: 1rem;
+    font-size: 1rem;
+
+    display: table-cell;
+}
+
+.post-story * {
+    padding-right: .5rem;
+    float: left;
+}
+
+.post-story .index {
+    font-size: 1.2rem;
+    color: #828282;
+}
+
+.post-story a {
+    text-decoration: none;
+}
+
+.post-story p {
+    font-size: 1rem;
+}
+
+.post-story .domain {
+    font-size: .8rem;
+}
+
+span {
+    display: flex;
+}
+
+#topnav {
+    background: #FF6600;
+    margin: 0;
+
+    display: flex;
+}
+
+#topnav h1 {
+    margin-bottom: 0;
+}
+
+#posts {
+    background: #F6F6EF;
+}
