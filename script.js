@@ -1,86 +1,79 @@
-function json_listener(obj) {
-    obj = [...JSON.parse(this.responseText)];
-}
+/* eslint linebreak-style: ["error", "windows"]*/
 
-function set_hn_obj(obj, url_target) {
-    let url = "https://node-hnapi.herokuapp.com" + url_target;
+/** Represents a parent class for all DOM element types */
 
-    let xhttp = new XMLHttpRequest();
+const handleJSON = (JSON) => {
+  return JSON;
+};
 
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            obj.push(...JSON.parse(this.response));
-        }
-    };
+const fetchPageJSON = async (pageLink) => {
+  // Create full url to request from hacker-news api
+  url = 'https://hacker-news.firebaseio.com/v0' + pageLink + '.json?';
+  // console.log(url);
+  const response = await fetch(url);
+  if (response.ok) {
+    return await response.json();
+  }
+};
 
-    xhttp.open("GET", url, false);
-    xhttp.send();   
-}
+const buildPage = (storyArray) => {
+  container = document.getElementById('posts');
+  for (let i = 0; i < storyArray.length; ++i) {
+    // Create a story div for each story
+    storyDiv = document.createElement('div');
+    container.appendChild(storyDiv);
+    storyTitle = document.createElement('p');
+    storyDiv.appendChild(storyTitle);
+    storyTitle.innerHTML = storyArray[i].title;
+  }
+  return container;
+};
 
-function set_hn_obj_new(obj, url_target) {
-    let url = "https://node-hnapi.herokuapp.com" + url_target;
-
-    let xhttp = new XMLHttpRequest();
-
-    xhttp.onload = json_listener(obj);
-}
-
-function build_element(container, elementType) {
-    return container.appendChild(document.createElement(elementType));
-}
-
-function build_element(container, elementType, desired_attribute, desired_value) {
-    temp = container.appendChild(document.createElement(elementType));
-    temp.setAttribute(desired_attribute, desired_value);
-    return temp;
-}
-
-function fill_posts(post_array, containerID) {
-    container = document.getElementById(containerID);
-    if (post_array.length < 1)
-        return;
-    for (i = 0; i < post_array.length; ++i) {
-        // Parent div for each post
-        let post = build_element(container, "div", "class", "post"); 
-
-        // Child span of post for each story
-        let post_story = build_element(post, "span", "class", "post-story");
-        
-        // Child h3 of post-story for index of each story
-        let post_index = build_element(post_story, "p", "class", "index");
-        post_index.innerHTML = i;
-
-        // Child link of post.story for each story 
-        let post_story_link = build_element(post_story, "a", "href", post_array[i].url);
-        post_story_link.innerHTML = post_array[i].title;
-
-        let post_story_domain = undefined
-        // Child p source for each story's source
-        if (post_array[i].domain) {
-            let post_story_domain = build_element(post_story, "a", "class", "domain");
-            post_story_domain.setAttribute("href", post_array[i].domain)
-            post_story_domain.innerHTML = "(" + post_array[i].domain + ")";
-        }
-
-        // Child span of post for each story's metadata
-        let post_meta = build_element(post, "span");
-        post_meta.setAttribute("class", "post-span");
-
-        // Child p user data
-        let post_meta_user = post_meta.appendChild(document.createElement("p"));
-        post_meta_user.innerHTML = post_array[i].points 
-                                + " points by " 
-                                + post_array[i].user
-                                + " | "
-        // Child a link to comments for each story meta span
-        let post_meta_comments = build_element(post_meta, "a", "href", post_array[i].id); 
-        post_meta_comments.innerHTML = post_array[i].comments_count + " comments | ";
-
+const buildStoryArray = async (JSON) => {
+  const storyArray = [];
+  for (let i = 0; i < 30; ++i) {
+    const story = await fetchPageJSON('/item/' + JSON[i]);
+    if (story) {
+      // console.log(story);
+      storyArray.push(story);
     }
-}
+  }
 
+  return storyArray;
+};
 
-hn_obj = [];
-set_hn_obj(hn_obj, "/news");
+const loadPage = (pageID) => {
+  fetchPageJSON(pageID)
+      .then((value) => {
+        return buildStoryArray(value);
+      })
+      .then((value) => {
+        return buildPage(value);
+      });
+};
 
-fill_posts(hn_obj, "posts");
+const locationHashChanged = () => {
+  switch (location.hash) {
+    case '#news': {
+      loadPage('/topstories');
+      break;
+    }
+    case '#newest': {
+      loadPage('/newstories');
+      break;
+    }
+    case '#JSONdump': {
+      loadPage('/item/3000');
+      break;
+    }
+    default: {
+      fetchPageJSON('/topstories')
+          .then((value) => handleJSON(value));
+    }
+  }
+};
+
+console.log('Hello, World!');
+
+loadPage('/topstories');
+window.onhashchange = locationHashChanged;
