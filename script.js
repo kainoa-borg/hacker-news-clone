@@ -1,86 +1,105 @@
-function json_listener(obj) {
-    obj = [...JSON.parse(this.responseText)];
-}
+/* eslint linebreak-style: ["error", "windows"]*/
 
-function set_hn_obj(obj, url_target) {
-    let url = "https://node-hnapi.herokuapp.com" + url_target;
+const postSubBuilder = (post) => {
+  const sub = document.createElement('span');
+  pScore = document.createElement('p');
+  pScore.innerHTML = post.score + ' points by ';
+  pUser = document.createElement('p');
+  pUser.innerHTML = post.by;
+  sub.appendChild(pScore);
+  sub.appendChild(pUser);
+  return sub;
+};
 
-    let xhttp = new XMLHttpRequest();
+const postMainBuilder = (post, index) => {
+  const main = document.createElement('span');
+  main.setAttribute('class', 'post-story');
+  pIndex = document.createElement('p');
+  pIndex.setAttribute('class', 'index');
+  pIndex.innerHTML = index;
+  pUpvote = document.createElement('button');
+  pUpvote.innerHTML = '^';
+  pTitle = document.createElement('a');
+  pTitle.href = post.url;
+  pTitle.innerHTML = post.title;
+  pDomain = document.createElement('p');
+  pDomain.setAttribute('class', 'domain');
+  pDomain.innerHTML = '(' + pTitle.hostname + ')';
+  main.appendChild(pIndex);
+  main.appendChild(pUpvote);
+  main.appendChild(pTitle);
+  main.appendChild(pDomain);
+  main.setAttribute('class', 'post-story');
+  return main;
+};
 
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            obj.push(...JSON.parse(this.response));
-        }
-    };
+const postElementBuilder = (post, index) => {
+  const story = document.createElement('div');
 
-    xhttp.open("GET", url, false);
-    xhttp.send();   
-}
+  story.append(postMainBuilder(post, index));
+  story.append(postSubBuilder(post));
 
-function set_hn_obj_new(obj, url_target) {
-    let url = "https://node-hnapi.herokuapp.com" + url_target;
+  return story;
+};
 
-    let xhttp = new XMLHttpRequest();
+const buildPage = (storyArray) => {
+  console.log(storyArray);
+  container = document.getElementById('posts');
+  container.innerHTML = '';
+  for (let i = 0; i < storyArray.length; ++i) {
+    // Create a story div for each story
+    container.appendChild(postElementBuilder(storyArray[i], i + 1));
+  }
+  return container;
+};
 
-    xhttp.onload = json_listener(obj);
-}
+const fetchStoryJSON = async (pageLink) => {
+  url = 'https://hacker-news.firebaseio.com/v0/item/' + pageLink + '.json?';
+  const response = await fetch(url);
+  if (response.ok) {
+    return response.json();
+  }
+};
 
-function build_element(container, elementType) {
-    return container.appendChild(document.createElement(elementType));
-}
+const buildStoryArray = (JSON) => {
+  const promiseArray = [];
+  for (i = 0; i < 30; ++i) {
+    promiseArray.push(fetchStoryJSON(JSON[i]));
+  }
+  return Promise.all(promiseArray);
+};
 
-function build_element(container, elementType, desired_attribute, desired_value) {
-    temp = container.appendChild(document.createElement(elementType));
-    temp.setAttribute(desired_attribute, desired_value);
-    return temp;
-}
+const loadPage = (pageLink) => {
+  // Create full url to request from hacker-news api
+  url = 'https://hacker-news.firebaseio.com/v0' + pageLink + '.json?';
+  // console.log(url);
+  fetch(url)
+      .then((response) => response.json())
+      .then((JSON) => buildStoryArray(JSON))
+      .then((storyArray) => buildPage(storyArray));
+};
 
-function fill_posts(post_array, containerID) {
-    container = document.getElementById(containerID);
-    if (post_array.length < 1)
-        return;
-    for (i = 0; i < post_array.length; ++i) {
-        // Parent div for each post
-        let post = build_element(container, "div", "class", "post"); 
-
-        // Child span of post for each story
-        let post_story = build_element(post, "span", "class", "post-story");
-        
-        // Child h3 of post-story for index of each story
-        let post_index = build_element(post_story, "p", "class", "index");
-        post_index.innerHTML = i;
-
-        // Child link of post.story for each story 
-        let post_story_link = build_element(post_story, "a", "href", post_array[i].url);
-        post_story_link.innerHTML = post_array[i].title;
-
-        let post_story_domain = undefined
-        // Child p source for each story's source
-        if (post_array[i].domain) {
-            let post_story_domain = build_element(post_story, "a", "class", "domain");
-            post_story_domain.setAttribute("href", post_array[i].domain)
-            post_story_domain.innerHTML = "(" + post_array[i].domain + ")";
-        }
-
-        // Child span of post for each story's metadata
-        let post_meta = build_element(post, "span");
-        post_meta.setAttribute("class", "post-span");
-
-        // Child p user data
-        let post_meta_user = post_meta.appendChild(document.createElement("p"));
-        post_meta_user.innerHTML = post_array[i].points 
-                                + " points by " 
-                                + post_array[i].user
-                                + " | "
-        // Child a link to comments for each story meta span
-        let post_meta_comments = build_element(post_meta, "a", "href", post_array[i].id); 
-        post_meta_comments.innerHTML = post_array[i].comments_count + " comments | ";
-
+const locationHashChanged = () => {
+  switch (location.hash) {
+    case '#best': {
+      loadPage('/beststories');
+      break;
     }
-}
+    case '#newest': {
+      loadPage('/newstories');
+      break;
+    }
+    case '#JSONdump': {
+      loadPage('/item/3000');
+      break;
+    }
+    case '#home': {
+      loadPage('/topstories');
+    }
+  }
+};
 
+console.log('Hello, World!');
 
-hn_obj = [];
-set_hn_obj(hn_obj, "/news");
-
-fill_posts(hn_obj, "posts");
+loadPage('/topstories');
+window.onhashchange = locationHashChanged;

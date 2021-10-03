@@ -58,6 +58,11 @@ span {
     margin-bottom: 0;
 }
 
+#topnav a {
+    text-align: center;
+    line-height: 1em;
+}
+
 #posts {
     background: #F6F6EF;
 }
