@@ -1,17 +1,19 @@
 /* eslint linebreak-style: ["error", "windows"]*/
 
-const postSubBuilder = (post) => {
+/** Takes a Story object 'story' and returns a DOM span element 'sub' that contains data on subline of story  */
+const storySubBuilder = (story) => {
   const sub = document.createElement('span');
   pScore = document.createElement('p');
-  pScore.innerHTML = post.score + ' points by ';
+  pScore.innerHTML = story.score + ' points by ';
   pUser = document.createElement('p');
-  pUser.innerHTML = post.by;
+  pUser.innerHTML = story.by;
   sub.appendChild(pScore);
   sub.appendChild(pUser);
   return sub;
 };
 
-const postMainBuilder = (post, index) => {
+/** Takes a Story object 'story' and an int 'index' value and returns a DOM span element 'main' containing mainline data from story  */
+const storyMainBuilder = (story, index) => {
   const main = document.createElement('span');
   main.setAttribute('class', 'post-story');
   pIndex = document.createElement('p');
@@ -20,8 +22,8 @@ const postMainBuilder = (post, index) => {
   pUpvote = document.createElement('button');
   pUpvote.innerHTML = '^';
   pTitle = document.createElement('a');
-  pTitle.href = post.url;
-  pTitle.innerHTML = post.title;
+  pTitle.href = story.url;
+  pTitle.innerHTML = story.title;
   pDomain = document.createElement('p');
   pDomain.setAttribute('class', 'domain');
   pDomain.innerHTML = '(' + pTitle.hostname + ')';
@@ -33,34 +35,40 @@ const postMainBuilder = (post, index) => {
   return main;
 };
 
-const postElementBuilder = (post, index) => {
-  const story = document.createElement('div');
+/** Takes Story object 'story' and int 'index' and returns a DOM div element 'story' containing a main and subline of story data */
+const storyElementBuilder = (story, index) => {
+  const storyElement = document.createElement('div');
 
-  story.append(postMainBuilder(post, index));
-  story.append(postSubBuilder(post));
+  storyElement.appendChild(storyMainBuilder(story, index));
+  storyElement.appendChild(storySubBuilder(story));
 
-  return story;
+  return storyElement;
 };
 
+/** Takes an array of Story objects 'storyArray' and returns a page container populated with 'story' elements */
 const buildPage = (storyArray) => {
   console.log(storyArray);
   container = document.getElementById('posts');
   container.innerHTML = '';
   for (let i = 0; i < storyArray.length; ++i) {
     // Create a story div for each story
-    container.appendChild(postElementBuilder(storyArray[i], i + 1));
+    container.appendChild(storyElementBuilder(storyArray[i], i + 1));
   }
   return container;
 };
 
-const fetchStoryJSON = async (pageLink) => {
-  url = 'https://hacker-news.firebaseio.com/v0/item/' + pageLink + '.json?';
+/** Async returns promised Story JSON object of an item ID from HN Firebase API
+ * Helper function for buildStoryArray()
+ */
+const fetchStoryJSON = async (itemID) => {
+  url = 'https://hacker-news.firebaseio.com/v0/item/' + itemID + '.json?';
   const response = await fetch(url);
   if (response.ok) {
     return response.json();
   }
 };
 
+/** Takes a JSON object of a page view from HN Firebase API and returns an array of Story objects from each story's JSON */
 const buildStoryArray = (JSON) => {
   const promiseArray = [];
   for (i = 0; i < 30; ++i) {
@@ -69,6 +77,7 @@ const buildStoryArray = (JSON) => {
   return Promise.all(promiseArray);
 };
 
+/** Takes a page link, gets a page view JSON object using fetch, builds an array of Story objects with buildStoryArray(), then builds a filled page container from array of Story objects using buildPage() */
 const loadPage = (pageLink) => {
   // Create full url to request from hacker-news api
   url = 'https://hacker-news.firebaseio.com/v0' + pageLink + '.json?';
@@ -79,6 +88,9 @@ const loadPage = (pageLink) => {
       .then((storyArray) => buildPage(storyArray));
 };
 
+/** Callback function for onhashchange event
+ * Loads page given by location.hash
+ */
 const locationHashChanged = () => {
   switch (location.hash) {
     case '#best': {
@@ -87,10 +99,6 @@ const locationHashChanged = () => {
     }
     case '#newest': {
       loadPage('/newstories');
-      break;
-    }
-    case '#JSONdump': {
-      loadPage('/item/3000');
       break;
     }
     case '#home': {
