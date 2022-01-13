@@ -2,9 +2,31 @@
     margin: 0;
     padding: 0;
 
-    color: #0E0E0E;
+    color: #000000;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
+
+#topnav {
+    background: #4a009e;
+    margin: 0;
+
+    display: flex;
+    top: 0px;
+    width: 95%;
+    overflow: hidden;
+    position: fixed;
+}
+
+#topnav h1 {
+    color: rgb(255, 255, 255);
+    margin-bottom: 0;
+}
+
+#posts {
+    margin-top: 30px;
+    background: #F6F6EF;
+}
+
 
 body {
     width: 95%;
@@ -14,9 +36,18 @@ body {
     font-size: 12px;
 }
 
+.post {
+    display: flex;
+}
+
+.post-body {
+    padding-left: 1rem;
+    width: 100%;
+}
+
 .post-story {
     padding-top: 1rem;
-    font-size: 1rem;
+    font-size: 1.3rem;
 
     display: table-cell;
 }
@@ -26,9 +57,12 @@ body {
     float: left;
 }
 
-.post-story .index {
+.index {
+    padding-top: 1rem;
+    width: 2rem;
     font-size: 1.2rem;
     color: #828282;
+    text-align: right;
 }
 
 .post-story a {
@@ -40,6 +74,7 @@ body {
 }
 
 .post-story .domain {
+    padding-top: .25rem;
     font-size: .8rem;
 }
 
@@ -47,17 +82,17 @@ span {
     display: flex;
 }
 
-#topnav {
-    background: #FF6600;
-    margin: 0;
-
-    display: flex;
+.post-span {
+    padding-top: .25rem;
 }
 
-#topnav h1 {
-    margin-bottom: 0;
+.post-span * {
+    padding-right: .5em;
 }
 
-#posts {
-    background: #F6F6EF;
+.post-divider {
+    margin-top: .5rem;
+    background-color:rgb(206, 206, 206);
+    border: none;
+    height: 1px;
 }

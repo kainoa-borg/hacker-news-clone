@@ -11,4 +11,4 @@ A simple clone of news.ycombinator.com built with vanillaJS, HTML, and CSS. Earl
 
 ## Support
 
-Please [open an issue](https://github.com/kai-borg/hacker-news-clone/issues/new) for support.
+Please [open an issue](https://github.com/kainoa-borg/hacker-news-clone/issues/new) for support.
