@@ -3,10 +3,12 @@ function json_listener(obj) {
 }
 
 function handle_json(xhttp) {
-    return [...JSON.parse(xhttp.responseText)];
+    let post_array = [...JSON.parse(xhttp.responseText)];
+    container.innerHTML = "";
+    fill_posts
 }
 
-function set_hn_obj(url_target) {
+function get_request(url_target, container, handler_func) {
     let url = "https://node-hnapi.herokuapp.com" + url_target;
 
     let xhttp = new XMLHttpRequest();
@@ -15,7 +17,8 @@ function set_hn_obj(url_target) {
         if (this.readyState == 4 && this.status == 200) {
             let post_array = handle_json(this);
             console.log(post_array);
-            fill_posts(post_array, 'posts');
+            container.innerHTML = "";
+            handler_func(post_array, container);
         }
     };
 
@@ -23,13 +26,6 @@ function set_hn_obj(url_target) {
     xhttp.send();
 }
 
-function set_hn_obj_new(obj, url_target) {
-    let url = "https://node-hnapi.herokuapp.com" + url_target;
-
-    let xhttp = new XMLHttpRequest();
-
-    xhttp.onload = json_listener(obj);
-}
 
 /**
  * Create an element and append to container
@@ -61,8 +57,7 @@ function build_element(container, elementType, desired_attribute, desired_value)
  * @param {String} containerID ID of main container to append with posts
  * @returns {Element[]} Array of post elements currently on the DOM;
  */
-function fill_posts(post_array, containerID) {
-    container = document.getElementById(containerID);
+function fill_posts(post_array, container) {
 
     let post_elements = [post_array.length];
 
@@ -107,8 +102,10 @@ function fill_posts(post_array, containerID) {
         console.log(get_age(post_array[i].time));
         
         // Child a href to comments for each story meta span
-        let post_meta_comments = build_element(post_meta, "a", "href", post_array[i].id); 
+        let post_meta_comments = build_element(post_meta, "a", "href", "#" + post_array[i].id); 
         post_meta_comments.innerHTML = post_array[i].comments_count + " comments";
+        post_meta_comments.addEventListener('onhashchange', ()=>{fillComments(container)})
+
         let post_vr = build_element(post_meta, "pre");
         post_vr.innerHTML = '|';
 
@@ -144,11 +141,41 @@ function get_age(unix_time) {
     else return "ERROR";
 }
 
+function fillComments(container) {
+    console.log(location.hash);
+    let post = build_element(container, h1)
+    
+}
+
 /**
- * Main logic function
+ * onHashChange event handler
+ */
+function switchPage(container) {
+    switch(location.hash) {
+        case '#news':
+            get_request("/news", container, fill_posts);
+            break;
+        case '#best':
+            get_request("/best", container, fill_posts);
+            break;
+        case '#newest':
+            get_request("/newest", container, fill_posts);
+            break;
+        default:
+            // this is an post id
+            get_request('/item/' + location.hash.slice(1), fillComments);
+            break;
+    }
+}
+
+/**
+ * Main function
  */
 function run() {
-    set_hn_obj("/news");
+    container = document.getElementById("posts");
+    get_request("/news", container, fill_posts);
+    location.hash = "news";
+    window.onhashchange = ()=>{switchPage(container)};
 }
 
 run();
