@@ -3,9 +3,7 @@ function json_listener(obj) {
 }
 
 function handle_json(xhttp) {
-    let post_array = [...JSON.parse(xhttp.responseText)];
-    container.innerHTML = "";
-    fill_posts
+    return [...JSON.parse(xhttp.responseText)];
 }
 
 function get_request(url_target, container, handler_func) {
